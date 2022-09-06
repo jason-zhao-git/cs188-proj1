@@ -17,6 +17,7 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
+from typing import Tuple
 import util
 
 class SearchProblem:
@@ -60,6 +61,12 @@ class SearchProblem:
         The sequence must be composed of legal moves.
         """
         util.raiseNotDefined()
+class Node:
+    def __init__(self, posi: Tuple, parent = None, dir = None, cost = 0):
+        self.posi = posi
+        self.parent = parent
+        self.direction = dir
+        self.cost = cost
 
 
 def tinyMazeSearch(problem):
@@ -87,17 +94,96 @@ def depthFirstSearch(problem: SearchProblem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    '''util.raiseNotDefined()'''
+    from util import Stack
+   
+    result = []
+    curr_pos = problem.getStartState()
+    curr_pos = Node(curr_pos)
+    stack = Stack()
+    explored = set()
+    
+    stack.push(curr_pos)
+    while (not stack.isEmpty()):
+        curr = stack.pop()
+        if (problem.isGoalState(curr.posi)):
+            break
+        if curr.posi in explored:
+            continue
+       
+        explored.add(curr.posi)
+        for valid_nxt in problem.getSuccessors(curr.posi):
+            stack.push(Node(valid_nxt[0], curr, valid_nxt[1], valid_nxt[2]))
+    
+    if (problem.isGoalState(curr.posi)):
+        while curr.parent != None:
+            result.insert(0, curr.direction)
+            curr = curr.parent
+    
+    return result
+
+
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import Queue
+   
+    result = []
+    curr_pos = problem.getStartState()
+    curr_pos = Node(curr_pos)
+    queue = Queue()
+    explored = set()
+    
+    queue.push(curr_pos)
+    while (not queue.isEmpty()):
+        curr = queue.pop()
+        if (problem.isGoalState(curr.posi)):
+            break
+        if curr.posi in explored:
+            continue
+       
+        explored.add(curr.posi)
+        for valid_nxt in problem.getSuccessors(curr.posi):
+            queue.push(Node(valid_nxt[0], curr, valid_nxt[1], valid_nxt[2]))
+    
+    if (problem.isGoalState(curr.posi)):
+        while curr.parent != None:
+            result.insert(0, curr.direction)
+            curr = curr.parent
+    
+    return result
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueue
+   
+    result = []
+    curr_pos = problem.getStartState()
+    curr_pos = Node(curr_pos)
+    queue = PriorityQueue()
+    explored = set()
+    
+    queue.push(curr_pos, curr_pos.cost)
+    while (not queue.isEmpty()):
+        curr = queue.pop()
+        if (problem.isGoalState(curr.posi)):
+            break
+        if curr.posi in explored:
+            continue
+       
+        explored.add(curr.posi)
+        for valid_nxt in problem.getSuccessors(curr.posi):
+            priority = curr.cost + valid_nxt[2]
+            queue.push(Node(valid_nxt[0], curr, valid_nxt[1], priority), priority)
+    
+    if (problem.isGoalState(curr.posi)):
+        while curr.parent != None:
+            result.insert(0, curr.direction)
+            curr = curr.parent
+    
+    return result
 
 def nullHeuristic(state, problem=None):
     """
@@ -109,7 +195,33 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueue
+   
+    result = []
+    curr_pos = problem.getStartState()
+    curr_pos = Node(curr_pos, None, None, heuristic(curr_pos, problem))
+    queue = PriorityQueue()
+    explored = set()
+    
+    queue.push(curr_pos, heuristic(curr_pos.posi, problem))
+    while (not queue.isEmpty()):
+        curr = queue.pop()
+        if (problem.isGoalState(curr.posi)):
+            break
+        if curr.posi in explored:
+            continue
+       
+        explored.add(curr.posi)
+        for valid_nxt in problem.getSuccessors(curr.posi):
+            priority = curr.cost + valid_nxt[2]
+            queue.push(Node(valid_nxt[0], curr, valid_nxt[1], priority), priority + heuristic(valid_nxt[0], problem))
+    
+    if (problem.isGoalState(curr.posi)):
+        while curr.parent != None:
+            result.insert(0, curr.direction)
+            curr = curr.parent
+    
+    return result
 
 
 # Abbreviations
