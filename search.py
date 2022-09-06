@@ -62,7 +62,7 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 class Node:
-    def __init__(self, posi: Tuple, parent = None, dir = None, cost = 0):
+    def __init__(self, posi, parent = None, dir = None, cost = 0):
         self.posi = posi
         self.parent = parent
         self.direction = dir
@@ -106,16 +106,16 @@ def depthFirstSearch(problem: SearchProblem):
     stack.push(curr_pos)
     while (not stack.isEmpty()):
         curr = stack.pop()
-        if (problem.isGoalState(curr.posi)):
+        if (problem.isGoalState(curr)):
             break
         if curr.posi in explored:
             continue
        
         explored.add(curr.posi)
-        for valid_nxt in problem.getSuccessors(curr.posi):
+        for valid_nxt in problem.getSuccessors(curr):
             stack.push(Node(valid_nxt[0], curr, valid_nxt[1], valid_nxt[2]))
     
-    if (problem.isGoalState(curr.posi)):
+    if (problem.isGoalState(curr)):
         while curr.parent != None:
             result.insert(0, curr.direction)
             curr = curr.parent

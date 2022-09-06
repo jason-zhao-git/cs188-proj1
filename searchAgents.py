@@ -292,21 +292,23 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
-
+        self.costFn = lambda x: 1
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        cornerTouch = tuple([False, False, False, False])
+        return (self.startingPosition, cornerTouch)
 
     def isGoalState(self, state: Any):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return all(state[1])
+    
 
     def getSuccessors(self, state: Any):
         """
@@ -319,8 +321,8 @@ class CornersProblem(search.SearchProblem):
             is the incremental cost of expanding to that successor
         """
 
-        successors = []
-        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+        #successors = []
+        #for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
             #   x,y = currentPosition
@@ -328,10 +330,35 @@ class CornersProblem(search.SearchProblem):
             #   nextx, nexty = int(x + dx), int(y + dy)
             #   hitsWall = self.walls[nextx][nexty]
 
-            "*** YOUR CODE HERE ***"
+        "*** YOUR CODE HERE ***"
+        def update(oricorners, posi):
+            updcorner = list(oricorners)
+            for i in range(4):
+                if self.corners[i] == posi:
+                    updcorner[i] = True
+            return tuple(updcorner)
 
+        successors = []
+        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+            x,y = state[0]
+            corner = state[1]
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            if not self.walls[nextx][nexty]:
+                nextStateposi = (nextx, nexty)
+                cost = self.costFn(nextStateposi)
+                nxtcnr = update(corner, nextStateposi)
+                successors.append(((nextStateposi, nxtcnr), action, cost))
+        
+
+
+        # Bookkeeping for display purposes
         self._expanded += 1 # DO NOT CHANGE
+       
         return successors
+    
+    
+
 
     def getCostOfActions(self, actions):
         """
@@ -364,7 +391,21 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    heu = []
+    #distance to closest corner
+    curr_corner = state[1]
+    num_untouched = 4 - sum(curr_corner)
+    for i in range(4):
+        if curr_corner[i] == False:
+            dist = abs(corners[i][0]-state[0][0])+abs(corners[i][1]-state[0][1])
+            heu.append(dist) 
+    width = min(corners[3][0] - 1, corners[i][1] - 1)
+    num_corner_left = max(0, num_untouched - 1)
+
+    if len(heu) == 0:
+        return 0
+
+    return min(heu) + width * num_corner_left # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -457,8 +498,13 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
+    heu = 0
     "*** YOUR CODE HERE ***"
-    return 0
+    for cord in foodGrid.asList():
+        dist = abs(cord[0]-position[0])+abs(cord[1]-position[1])
+        heu = max(heu, dist)
+    
+    return heu
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
